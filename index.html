@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>HVAC Digital Twin — Simulador de Diagnóstico</title>
+<link rel="stylesheet" href="./src/css/style.css" />
+</head>
+<body>
+<header class="app-header">
+  <h1>⚙ HVAC Digital Twin</h1>
+  <span id="status-pill" class="status-pill stopped">DETENIDO</span>
+  <div class="top-controls">
+    <select id="scenario-select" aria-label="Escenario"></select>
+    <button id="btn-reset" class="danger">RESET SYSTEM</button>
+    <button id="btn-run-pause" class="primary">Pausar</button>
+  </div>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button data-tab="hmi" class="active">HMI</button>
+  <button data-tab="tecnico">Modo técnico</button>
+  <button data-tab="fallas">Fallas</button>
+  <button data-tab="diagnostico">Diagnóstico</button>
+  <button data-tab="graficas">Gráficas</button>
+  <button data-tab="viz3d">3D</button>
+  <button data-tab="reporte">Reporte</button>
+</nav>
+
+<main>
+
+  <!-- ============ HMI ============ -->
+  <section id="tab-hmi" class="tab-panel active">
+    <div class="grid">
+      <div class="card">
+        <h2>Equipo</h2>
+        <div class="readout"><span class="label">Estado general</span><span class="value" id="hmi-equipo-estado">—</span></div>
+        <div class="readout"><span class="label">Modo</span><span class="value">Enfriamiento</span></div>
+        <div class="readout"><span class="label">Temp. retorno</span><span class="value" id="hmi-return">—</span></div>
+        <div class="readout"><span class="label">Temp. suministro</span><span class="value" id="hmi-supply">—</span></div>
+        <div class="readout"><span class="label">Temp. exterior</span><span class="value" id="hmi-ambient">—</span></div>
+        <div class="readout"><span class="label">Capacidad</span><span class="value" id="hmi-capacity">—</span></div>
+      </div>
+
+      <div class="card">
+        <h2>Refrigeración</h2>
+        <div class="readout"><span class="label">Succión</span><span class="value" id="hmi-suction">—</span></div>
+        <div class="readout"><span class="label">Descarga</span><span class="value" id="hmi-discharge">—</span></div>
+        <div class="readout"><span class="label">Superheat</span><span class="value" id="hmi-superheat">—</span></div>
+        <div class="readout"><span class="label">Subcooling</span><span class="value" id="hmi-subcooling">—</span></div>
+      </div>
+
+      <div class="card">
+        <h2>Eléctrico</h2>
+        <div class="readout"><span class="label">L1-L2 / L2-L3 / L3-L1</span><span class="value" id="hmi-voltages">—</span></div>
+        <div class="readout"><span class="label">I L1 / L2 / L3</span><span class="value" id="hmi-currents">—</span></div>
+        <div class="readout"><span class="label">Potencia</span><span class="value" id="hmi-power">—</span></div>
+        <div class="readout"><span class="label">Factor de potencia</span><span class="value" id="hmi-pf">—</span></div>
+      </div>
+
+      <div class="card">
+        <h2>Componentes</h2>
+        <div class="readout"><span class="label">Compresor</span><span class="badge off" id="hmi-comp-badge">—</span></div>
+        <div class="readout"><span class="label">Vent. condensador</span><span class="badge off" id="hmi-condfan-badge">—</span></div>
+        <div class="readout"><span class="label">Vent. evaporador</span><span class="badge off" id="hmi-evapfan-badge">—</span></div>
+        <div class="readout"><span class="label">Contactor</span><span class="badge off" id="hmi-contactor-badge">—</span></div>
+      </div>
+
+      <div class="card" style="grid-column: 1 / -1;">
+        <h2>Alarmas / advertencias / protecciones</h2>
+        <ul class="alarm-list" id="hmi-alarms"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ MODO TÉCNICO ============ -->
+  <section id="tab-tecnico" class="tab-panel">
+    <p class="footer-note" style="margin-top:0">
+      Tome las mediciones necesarias antes de ir a la pestaña "Diagnóstico". Las mediciones de panel (presiones, temperaturas, eléctrico) se consideran tomadas automáticamente al ver este panel; las dos mediciones de inspección física requieren una acción explícita.
+    </p>
+    <div class="grid">
+      <div class="card">
+        <h2>Refrigeración</h2>
+        <div class="readout"><span class="label">Presión succión</span><span class="value" id="tec-suction">—</span></div>
+        <div class="readout"><span class="label">Presión descarga</span><span class="value" id="tec-discharge">—</span></div>
+        <div class="readout"><span class="label">Temp. línea succión</span><span class="value" id="tec-suction-temp">—</span></div>
+        <div class="readout"><span class="label">Temp. línea líquido</span><span class="value" id="tec-liquid-temp">—</span></div>
+        <div class="readout"><span class="label">Temp. retorno</span><span class="value" id="tec-return">—</span></div>
+        <div class="readout"><span class="label">Temp. suministro</span><span class="value" id="tec-supply">—</span></div>
+        <div class="readout"><span class="label">Temp. exterior</span><span class="value" id="tec-ambient">—</span></div>
+        <div class="readout"><span class="label">Superheat</span><span class="value" id="tec-superheat">—</span></div>
+        <div class="readout"><span class="label">Subcooling</span><span class="value" id="tec-subcooling">—</span></div>
+      </div>
+      <div class="card">
+        <h2>Electricidad</h2>
+        <div class="readout"><span class="label">L1-L2</span><span class="value" id="tec-v12">—</span></div>
+        <div class="readout"><span class="label">L2-L3</span><span class="value" id="tec-v23">—</span></div>
+        <div class="readout"><span class="label">L3-L1</span><span class="value" id="tec-v31">—</span></div>
+        <div class="readout"><span class="label">Corriente L1</span><span class="value" id="tec-i1">—</span></div>
+        <div class="readout"><span class="label">Corriente L2</span><span class="value" id="tec-i2">—</span></div>
+        <div class="readout"><span class="label">Corriente L3</span><span class="value" id="tec-i3">—</span></div>
+        <div class="readout"><span class="label">Potencia</span><span class="value" id="tec-power">—</span></div>
+        <div class="readout"><span class="label">Factor de potencia</span><span class="value" id="tec-pf">—</span></div>
+      </div>
+      <div class="card">
+        <h2>Sistema</h2>
+        <div class="readout"><span class="label">Estado compresor</span><span class="value" id="tec-comp-status">—</span></div>
+        <div class="readout"><span class="label">Estado vent. condensador</span><span class="value" id="tec-fan-status">—</span></div>
+        <div class="readout"><span class="label">Estado contactor</span><span class="value" id="tec-contactor-status">—</span></div>
+        <div class="readout"><span class="label">Alarmas / protecciones</span><span class="value" id="tec-alarm-count">—</span></div>
+      </div>
+      <div class="card">
+        <h2>Pruebas de inspección (acción manual)</h2>
+        <div class="readout">
+          <span class="label">Caída de presión filtro/serpentín</span>
+          <span>
+            <button id="btn-measure-filter" class="measurement-btn">Medir</button>
+            <span id="tec-filter-dp">no medido</span>
+          </span>
+        </div>
+        <div class="readout">
+          <span class="label">Inspección línea de líquido (restricción)</span>
+          <span>
+            <button id="btn-measure-restriction" class="measurement-btn">Inspeccionar</button>
+            <span id="tec-restriction">no inspeccionado</span>
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FALLAS ============ -->
+  <section id="tab-fallas" class="tab-panel">
+    <p class="footer-note" style="margin-top:0">Active una o varias fallas. Cada falla modifica variables físicas reales del modelo (no solo un texto). Use RESET SYSTEM para volver al estado normal.</p>
+    <div id="fault-list" class="grid"></div>
+  </section>
+
+  <!-- ============ DIAGNÓSTICO ============ -->
+  <section id="tab-diagnostico" class="tab-panel">
+    <p class="footer-note" style="margin-top:0">Clasificación basada en evidencia: DEMOSTRADO, COMPATIBLE, NO_DETERMINADO o CONTRADICTORIO. El motor evalúa todas las hipótesis, no se detiene en la primera que encaja.</p>
+    <div style="overflow-x:auto">
+      <table class="diagnosis-table">
+        <thead>
+          <tr>
+            <th>Hipótesis</th>
+            <th>Estado</th>
+            <th>Evidencia a favor</th>
+            <th>Evidencia en contra</th>
+            <th>Mediciones faltantes</th>
+            <th>Próxima prueba</th>
+          </tr>
+        </thead>
+        <tbody id="diagnosis-tbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ GRÁFICAS ============ -->
+  <section id="tab-graficas" class="tab-panel">
+    <div class="grid">
+      <div class="card"><h2>Presiones (psig)</h2><canvas class="chart-canvas" id="chart-pressures"></canvas></div>
+      <div class="card"><h2>Superheat / Subcooling (°F)</h2><canvas class="chart-canvas" id="chart-shsc"></canvas></div>
+      <div class="card"><h2>Temperaturas de aire (°F)</h2><canvas class="chart-canvas" id="chart-airtemps"></canvas></div>
+      <div class="card"><h2>Corriente por fase (A)</h2><canvas class="chart-canvas" id="chart-currents"></canvas></div>
+      <div class="card"><h2>Potencia (kW)</h2><canvas class="chart-canvas" id="chart-power"></canvas></div>
+      <div class="card"><h2>Capacidad estimada (%)</h2><canvas class="chart-canvas" id="chart-capacity"></canvas></div>
+    </div>
+  </section>
+
+  <!-- ============ 3D ============ -->
+  <section id="tab-viz3d" class="tab-panel">
+    <div id="viz3d-container"></div>
+    <div class="viz3d-controls" id="viz3d-toggles"></div>
+    <div id="component-inspector">Seleccione un componente en el modelo 3D para inspeccionarlo.</div>
+  </section>
+
+  <!-- ============ REPORTE ============ -->
+  <section id="tab-reporte" class="tab-panel">
+    <div class="card">
+      <h2>Exportar diagnóstico</h2>
+      <p style="font-size:12px;color:var(--text-dim)">Genera un reporte con fecha/hora, estado del equipo, mediciones, fallas activas, hipótesis, evidencias y pruebas recomendadas.</p>
+      <button id="btn-export-json" class="primary">Descargar JSON</button>
+      <button id="btn-export-csv">Descargar CSV</button>
+      <pre id="report-preview" style="white-space:pre-wrap;font-size:11px;max-height:400px;overflow:auto;margin-top:10px;background:#05080f;padding:8px;border-radius:4px;border:1px solid var(--border)"></pre>
+    </div>
+  </section>
+
+  <p class="footer-note">
+    HVAC Digital Twin — Simulador educativo. Modelo termodinámico y eléctrico SIMPLIFICADO (ver README → "Simplificaciones físicas"); no representa un refrigerante ni equipo real específico y no debe usarse como única base para decisiones de campo.
+  </p>
+</main>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module" src="./src/js/main.js"></script>
+</body>
+</html>

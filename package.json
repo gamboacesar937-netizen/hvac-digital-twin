@@ -1,0 +1,20 @@
+{
+  "name": "hvac-digital-twin",
+  "version": "1.0.0",
+  "description": "Simulador interactivo de diagnóstico HVAC (Rooftop/Package ~30 TR) con motor de diagnóstico basado en evidencia, modelo eléctrico trifásico y visualización 3D. 100% cliente, sin backend, desplegable en GitHub Pages.",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test tests/",
+    "start": "python3 -m http.server 8080",
+    "serve": "python3 -m http.server 8080"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/USUARIO/hvac-digital-twin.git"
+  }
+}
